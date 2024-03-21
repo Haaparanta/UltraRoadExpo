@@ -1,13 +1,8 @@
-// components/camera.js
-
-// add here that it returns somehow response json from the server to the APP.js file.
-// also share the image to the feedback component.
-
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Button, StyleSheet, Text } from 'react-native';
 import { Camera } from 'expo-camera';
 
-export default function CameraScreen() {
+export default function CameraScreen({ onPictureTaken }) {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
   const cameraRef = useRef(null); 
@@ -24,7 +19,6 @@ export default function CameraScreen() {
   }, []);
 
   const takePicture = async () => {
-    console.log("Taking picture");
     if (cameraRef.current) {
       let photo = await cameraRef.current.takePictureAsync(); 
 
@@ -34,9 +28,6 @@ export default function CameraScreen() {
         type: 'image/jpeg',
         name: 'upload.jpg',
       });
-  
-      console.log("Uploading image");
-      console.log("Photo URI: ", photo.uri);
 
       try {
         const response = await fetch('http://ddns.serverlul.win:8000/annotate', {
@@ -48,8 +39,7 @@ export default function CameraScreen() {
         });
   
         const responseData = await response.json();
-        console.log(responseData);
-        navigation.navigate('FeedbackComponent', { imageUri: photo.uri, response: responseData });
+        onPictureTaken(photo.uri, responseData);
       } catch (error) {
         console.error("Error uploading image: ", error);
       }
@@ -63,13 +53,13 @@ export default function CameraScreen() {
       <Camera style={styles.camera} type={type} ref={cameraRef}>
       </Camera>
       <View style={styles.buttonContainer}>
-          <Button title="Flip Camera" onPress={() => {
-            setType(type === Camera.Constants.Type.back
-              ? Camera.Constants.Type.front
-              : Camera.Constants.Type.back);
-          }} />
-          <Button title="Take Picture" onPress={takePicture} />
-        </View>
+        <Button title="Flip Camera" onPress={() => {
+          setType(type === Camera.Constants.Type.back
+            ? Camera.Constants.Type.front
+            : Camera.Constants.Type.back);
+        }} />
+        <Button title="Take Picture" onPress={takePicture} />
+      </View>
       <Text style={styles.howToText}>How to use: Capture your surroundings and get instant info.</Text>
     </View>
   );
@@ -99,4 +89,3 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
 });
-
