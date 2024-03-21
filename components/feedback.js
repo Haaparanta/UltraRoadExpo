@@ -1,16 +1,52 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, Button, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native'; // Import Image from react-native
+import { Picker } from '@react-native-picker/picker';
 
-const FeedbackComponent = ({ onFeedbackSent, pictureUri, serverResponse, location }) => {
-  const [issueType, setIssueType] = useState('');
-  const [headline, setHeadline] = useState('');
-  const [description, setDescription] = useState('');
+const FeedbackComponent = ({ onFeedbackSent, pictureUri, serverResponse, location, address }) => {
+  const [title, setTitle] = useState('');
+  const [text, setText] = useState('');
+  const [kinds, setKinds] = useState(['Loading...']);
+  const [kind, setKind] = useState(serverResponse);
+
+  useEffect(() => {
+    const fetchKinds = async () => {
+      try {
+        const response = await fetch('http://ddns.serverlul.win:8000/kinds');
+        const data = await response.json();
+        setKinds(data.map(kind => kind.name));
+      } catch (error) {
+        console.error("Error fetching kinds: ", error);
+      }
+    };
+    fetchKinds();
+  }, []);
 
   const submitFeedback = async () => {
-    if (!location) {
-      console.error("Location data is not available.");
+    if (!location || !address) {
+      console.error("Location data or address is not available.");
       return;
     }
+    if (!kind) {
+      console.error("Issue type is not available.");
+      return;
+    }
+    if (!title) {
+      console.error("Headline is not available.");
+      return;
+    }
+    if (!text) {
+      console.error("Description is not available.");
+      return;
+    }
+
+
+    console.log("Submitting feedback...");
+    console.log("Issue Type: ", kind);
+    console.log("Headline: ", title);
+    console.log("Description: ", text);
+    console.log("Latitude: ", location.coords.latitude);
+    console.log("Longitude: ", location.coords.longitude);
+    console.log("Address: ", address);
 
     const formData = new FormData();
     formData.append('file', {
@@ -19,31 +55,23 @@ const FeedbackComponent = ({ onFeedbackSent, pictureUri, serverResponse, locatio
       name: 'issue.jpg',
     });
 
-    console.log("Submitting feedback...");
-    console.log("Issue Type: ", issueType);
-    console.log("Headline: ", headline);
-    console.log("Description: ", description);
-    console.log("Latitude: ", location.coords.latitude);
-    console.log("Longitude: ", location.coords.longitude);
-
     try {
-      console.log("Submitting feedback...");
       const response = await fetch('http://ddns.serverlul.win:8000/post', {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
           'x-latitude': location.coords.latitude,
           'x-longitude': location.coords.longitude,
-          'x-kind': issueType,
-          'x-title': headline,
-          'x-text': description,
-          'x-address': '1234 Main St, Springfield, IL 62701',
+          'x-kind': kind,
+          'x-title': title,
+          'x-text': text,
+          'x-address': address,
         },
         body: formData,
       });
 
       const responseData = await response.json();
-      console.log(responseData);
+      console.log("Feedback submitted: ", responseData);
       if (onFeedbackSent) onFeedbackSent();
     } catch (error) {
       console.error("Error submitting feedback: ", error);
@@ -51,33 +79,49 @@ const FeedbackComponent = ({ onFeedbackSent, pictureUri, serverResponse, locatio
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+    >
+      {pictureUri && (
+        <Image
+          source={{ uri: pictureUri }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      )}
+      
+      <Picker
+        selectedValue={kind}
+        onValueChange={(itemValue, itemIndex) => setKind(itemValue)}
         style={styles.input}
-        placeholder="Issue Type"
-        onChangeText={setIssueType}
-        value={issueType}
-      />
+      >
+        {kinds.map((kind, index) => (
+          <Picker.Item key={index} label={kind} value={kind} />
+        ))}
+      </Picker>
       <TextInput
         style={styles.input}
         placeholder="Headline"
-        onChangeText={setHeadline}
-        value={headline}
+        onChangeText={setTitle}
+        value={title}
       />
       <TextInput
         style={[styles.input, styles.multilineInput]}
         placeholder="Description"
-        onChangeText={setDescription}
-        value={description}
+        onChangeText={setText}
+        value={text}
         multiline
       />
       <Button title="Submit Feedback" onPress={submitFeedback} />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 5,
     padding: 20,
   },
   input: {
@@ -90,6 +134,10 @@ const styles = StyleSheet.create({
   multilineInput: {
     height: 100,
     textAlignVertical: 'top',
+  },
+  image: {
+    flex: 1,
+    marginBottom: 20,
   },
 });
 

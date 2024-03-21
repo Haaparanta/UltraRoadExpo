@@ -39,7 +39,8 @@ export default function CameraScreen({ onPictureTaken }) {
         });
   
         const responseData = await response.json();
-        onPictureTaken(photo.uri, responseData);
+        console.log("Response data: ", responseData);
+        onPictureTaken(photo.uri, responseData.kind);
       } catch (error) {
         console.error("Error uploading image: ", error);
       }

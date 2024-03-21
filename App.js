@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import CameraScreen from './components/camera';
 import FeedbackComponent from './components/feedback';
-import { useLocation } from './components/location';
+import { useLocationAndAddress } from './components/location';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Camera');
   const [pictureUri, setPictureUri] = useState(null);
   const [serverResponse, setServerResponse] = useState(null);
-  const { location, errorMsg } = useLocation();
+  const { location, address, errorMsg } = useLocationAndAddress();
 
   const handlePictureTaken = (uri, response) => {
     setPictureUri(uri);
@@ -30,6 +30,7 @@ export default function App() {
         pictureUri={pictureUri}
         serverResponse={serverResponse}
         location={location}
+        address={address}
       />
     );
   }
