@@ -1,21 +1,24 @@
-// components/location.js
+// components/LocationComponent.js
 
-// make this componet start getting location when the app starts.
-// Now make it so the location is shared in App.js file to everybody who needs it.
-
-
+import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 
-const LocationComponent = async () => {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') {
-    return null
-  }
-  const location = await Location.getCurrentPositionAsync({});
+export const useLocation = () => {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
 
-  return (
-    location
-  );
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  return { location, errorMsg };
 };
-
-export default LocationComponent;

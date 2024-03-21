@@ -1,11 +1,11 @@
 // components/camera.js
 
 // add here that it returns somehow response json from the server to the APP.js file.
+// also share the image to the feedback component.
 
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Button, StyleSheet, Text } from 'react-native';
 import { Camera } from 'expo-camera';
-import LocationComponent from './location';
 
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -26,16 +26,7 @@ export default function CameraScreen() {
   const takePicture = async () => {
     console.log("Taking picture");
     if (cameraRef.current) {
-      let latitude = 0;
-      let longitude = 0; 
       let photo = await cameraRef.current.takePictureAsync(); 
-      const location = await LocationComponent();
-      if (location) {
-        latitude = Number(location.coords.latitude);
-        longitude = Number(location.coords.longitude);
-        console.log("Latitude: ", latitude);
-        console.log("Longitude: ", longitude);
-      }
 
       const formData = new FormData();
       formData.append('file', {
@@ -44,27 +35,21 @@ export default function CameraScreen() {
         name: 'upload.jpg',
       });
   
-      const text = "This is a test";
       console.log("Uploading image");
-      console.log("Text: ", text);
-      console.log("Latitude: ", latitude);
-      console.log("Longitude: ", longitude);
       console.log("Photo URI: ", photo.uri);
 
       try {
-        const response = await fetch('http://192.168.236.175:8000/annotate', {
+        const response = await fetch('http://ddns.serverlul.win:8000/annotate', {
           method: 'POST',
           headers: {
-            'Content-Type': 'multipart/form-data',
-            'X-Longitude': longitude, 
-            'X-Latitude': latitude,
-            'X-Text': text,
+            'Content-Type': 'multipart/form-data'
           },
           body: formData,
         });
   
         const responseData = await response.json();
         console.log(responseData);
+        navigation.navigate('FeedbackComponent', { imageUri: photo.uri, response: responseData });
       } catch (error) {
         console.error("Error uploading image: ", error);
       }

@@ -1,31 +1,51 @@
-// components/feedback.js
+// FeedbackComponent.js
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text } from 'react-native';
 
+const FeedbackComponent = ({ navigation, route }) => {
+  const { imageUri, response } = route.params;
+  const [issueType, setIssueType] = useState('');
+  const [headline, setHeadline] = useState('');
+  const [description, setDescription] = useState('');
 
-const FeedbackComponent = () => {
-  // Inhere we will handle feedback from users. And send it to the server.
+  const submitFeedback = async () => {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: imageUri,
+      type: 'image/jpeg',
+      name: 'issue.jpg',
+    });
 
-  // feedback types: Cleaning, roads, maintannace etc. They should be in openable list.
-  // Then user can select one of them and write a feedback.
-  // Then we will send it to the server.
+    formData.append('latitude', String(location.latitude));
+    formData.append('longitude', String(location.longitude));
+    formData.append('type', issueType);
+    formData.append('headline', headline);
+    formData.append('description', description);
 
-  // Get this data from user:
-  // type of the issue.
-  // headline of the issue.
-  // description of the issue.
-  // username of the user. (optional)
-  // email of the user. (optional)
-
-  // Send this data to the server.
-  // Also send following data to the server:
-  // Latitude and longitude of the issue.
-  // Date and time of the issue.
-  // Users id and optionally users username and email.
-  // the image of the issue. Which has been taken in camera component.
+    try {
+      const response = await fetch('http://ddns.serverlul.win:8000/post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        body: formData,
+      });
+  
+      const responseData = await response.json();
+      console.log(responseData);
+    } catch (error) {
+      console.error("Error submitting feedback: ", error);
+    }
+  };
 
   return (
-    <div>
-    </div>
+    <View>
+      <TextInput placeholder="Issue Type" onChangeText={setIssueType} value={issueType} />
+      <TextInput placeholder="Headline" onChangeText={setHeadline} value={headline} />
+      <TextInput placeholder="Description" onChangeText={setDescription} value={description} multiline />
+      <Button title="Submit Feedback" onPress={submitFeedback} />
+    </View>
   );
-}
+};
 
 export default FeedbackComponent;
