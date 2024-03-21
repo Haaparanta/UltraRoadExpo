@@ -1,12 +1,26 @@
+// components/feedback.js
+
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native'; // Import Image from react-native
+import { View, TextInput, Button, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
 const FeedbackComponent = ({ onFeedbackSent, pictureUri, kindI, titleI, textI, location, address }) => {
   const [title, setTitle] = useState(titleI);
-  const [text, setText] = useState(textI);
+  const [text, setText] = useState(textI); 
   const [kinds, setKinds] = useState(['Loading...']);
-  const [kind, setKind] = useState(kindI);
+  const [kind, setKind] = useState(kindI); 
+
+  useEffect(() => {
+    setTitle(titleI);
+  }, [titleI]);
+
+  useEffect(() => {
+    setText(textI);
+  }, [textI]);
+
+  useEffect(() => {
+    setKind(kindI);
+  }, [kindI]);
 
   useEffect(() => {
     const fetchKinds = async () => {
@@ -20,6 +34,10 @@ const FeedbackComponent = ({ onFeedbackSent, pictureUri, kindI, titleI, textI, l
     };
     fetchKinds();
   }, []);
+
+  const submitCancel = () => {
+    if (onFeedbackSent) onFeedbackSent();
+  }
 
   const submitFeedback = async () => {
     if (!location || !address) {
@@ -38,8 +56,6 @@ const FeedbackComponent = ({ onFeedbackSent, pictureUri, kindI, titleI, textI, l
       console.error("Description is not available.");
       return;
     }
-
-
     console.log("Submitting feedback...");
     console.log("Issue Type: ", kind);
     console.log("Headline: ", title);
@@ -103,18 +119,19 @@ const FeedbackComponent = ({ onFeedbackSent, pictureUri, kindI, titleI, textI, l
       </Picker>
       <TextInput
         style={styles.input}
-        placeholder="Otsikko"
+        placeholder="Title"
         onChangeText={setTitle}
-        value={titleI}
+        value={title} 
       />
       <TextInput
         style={[styles.input, styles.multilineInput]}
-        placeholder="Teksti"
+        placeholder="Description"
         onChangeText={setText}
-        value={textI}
+        value={text}
         multiline
       />
-      <Button title="Submit Feedback" onPress={submitFeedback} />
+      <Button title="Lähetä palaute" onPress={submitFeedback} />
+      <Button title="Peruuta" onPress={submitCancel} />
     </KeyboardAvoidingView>
   );
 };

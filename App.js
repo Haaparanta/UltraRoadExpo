@@ -1,3 +1,5 @@
+// App.js
+
 import React, { useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import CameraScreen from './components/camera';
@@ -32,9 +34,9 @@ export default function App() {
       <FeedbackComponent
         onFeedbackSent={() => setCurrentScreen('Camera')}
         pictureUri={pictureUri}
-        kind={kind}
-        title={title}
-        text={text}
+        kindI={kind}
+        titleI={title}
+        textI={text}
         location={location}
         address={address}
       />
