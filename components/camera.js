@@ -19,6 +19,7 @@ export default function CameraScreen({ onPictureTaken }) {
   }, []);
 
   const takePicture = async () => {
+    console.log("Taking picture...");
     if (cameraRef.current) {
       let photo = await cameraRef.current.takePictureAsync(); 
 
@@ -40,7 +41,7 @@ export default function CameraScreen({ onPictureTaken }) {
   
         const responseData = await response.json();
         console.log("Response data: ", responseData);
-        onPictureTaken(photo.uri, responseData.kind);
+        onPictureTaken(photo.uri, responseData.kind, responseData.title, responseData.text);
       } catch (error) {
         console.error("Error uploading image: ", error);
       }

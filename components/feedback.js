@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, StyleSheet, KeyboardAvoidingView, Platform, Image } from 'react-native'; // Import Image from react-native
 import { Picker } from '@react-native-picker/picker';
 
-const FeedbackComponent = ({ onFeedbackSent, pictureUri, serverResponse, location, address }) => {
-  const [title, setTitle] = useState('');
-  const [text, setText] = useState('');
+const FeedbackComponent = ({ onFeedbackSent, pictureUri, kindI, titleI, textI, location, address }) => {
+  const [title, setTitle] = useState(titleI);
+  const [text, setText] = useState(textI);
   const [kinds, setKinds] = useState(['Loading...']);
-  const [kind, setKind] = useState(serverResponse);
+  const [kind, setKind] = useState(kindI);
 
   useEffect(() => {
     const fetchKinds = async () => {
@@ -103,15 +103,15 @@ const FeedbackComponent = ({ onFeedbackSent, pictureUri, serverResponse, locatio
       </Picker>
       <TextInput
         style={styles.input}
-        placeholder="Headline"
+        placeholder="Otsikko"
         onChangeText={setTitle}
-        value={title}
+        value={titleI}
       />
       <TextInput
         style={[styles.input, styles.multilineInput]}
-        placeholder="Description"
+        placeholder="Teksti"
         onChangeText={setText}
-        value={text}
+        value={textI}
         multiline
       />
       <Button title="Submit Feedback" onPress={submitFeedback} />

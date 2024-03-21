@@ -7,12 +7,16 @@ import { useLocationAndAddress } from './components/location';
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('Camera');
   const [pictureUri, setPictureUri] = useState(null);
-  const [serverResponse, setServerResponse] = useState(null);
+  const [kind, setKind] = useState(null);
+  const [title, setTitle] = useState(null);
+  const [text, setText] = useState(null);
   const { location, address, errorMsg } = useLocationAndAddress();
 
-  const handlePictureTaken = (uri, response) => {
+  const handlePictureTaken = (uri, kind, title, text) => {
     setPictureUri(uri);
-    setServerResponse(response);
+    setKind(kind);
+    setTitle(title);
+    setText(text);
     setCurrentScreen('Feedback');
   };
 
@@ -28,7 +32,9 @@ export default function App() {
       <FeedbackComponent
         onFeedbackSent={() => setCurrentScreen('Camera')}
         pictureUri={pictureUri}
-        serverResponse={serverResponse}
+        kind={kind}
+        title={title}
+        text={text}
         location={location}
         address={address}
       />
