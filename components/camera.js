@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Button, StyleSheet } from 'react-native';
 import { Camera } from 'expo-camera';
 
-import { saveImage } from './CropImage';
-
 export default function CameraScreen() {
   const [hasPermission, setHasPermission] = useState(null);
   const [type, setType] = useState(Camera.Constants.Type.back);
@@ -11,7 +9,7 @@ export default function CameraScreen() {
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestPermissionsAsync();
+      const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
     })();
   }, []);
@@ -26,11 +24,37 @@ export default function CameraScreen() {
   const takePicture = async () => {
     if (cameraRef) {
       let photo = await cameraRef.takePictureAsync();
-      console.log('Photo', photo);
-      saveImage(photo.uri);
+      const latitude = 0;
+      const longitude = 0; 
+      const text = "Example Text"; 
+  
+      const formData = new FormData();
+      formData.append('file', {
+        uri: photo.uri,
+        type: 'image/jpeg',
+        name: 'upload.jpg',
+      });
+  
+      try {
+        const response = await fetch('http://192.168.236.175:8000/annotate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'X-Longitude': longitude, 
+            'X-Latitude': latitude,
+            'X-Text': text,
+          },
+          body: formData,
+        });
+  
+        const responseData = await response.json();
+        console.log(responseData);
+      } catch (error) {
+        console.error("Error uploading image: ", error);
+      }
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <Camera style={styles.camera} type={type} ref={ref => setCameraRef(ref)}>
@@ -57,9 +81,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonContainer: {
-    flex: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     flexDirection: 'row',
-    justifyContent: 'center',
-    margin: 20,
+    justifyContent: 'space-around',
+    padding: 10,
   },
 });
+
